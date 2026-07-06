@@ -1,29 +1,37 @@
 AUTOMATED OVERNIGHT JUPYTER RUNNER: REFERENCE GUIDE
 
 
-STEP 1: KILL RUNNING JUPYTER INSTANCESEnsure no active browser tabs or Jupyter background processes are interacting with your files.In your active Jupyter terminal window, press: Ctrl + C then type y and press Enter.
+STEP 1: KILL RUNNING JUPYTER INSTANCES
+Ensure no active browser tabs or Jupyter background processes are interacting with your files. In your active Jupyter terminal window, press: Ctrl + C then type y and press Enter.
 
 
-STEP 2: OPEN MAIN UBUNTU TERMINAL AND ACTIVATE ENVIRONMENTNavigate to your project notebooks directory and activate your specific virtual environment using its path:bashcd /mnt/mydata/06.04.2026_home_laptop_backup/Downloads/Course3_AI_Bootcamp/Deep_Learning/ch13_Project_Car_Damage_Detection/car-damage-classifier/notebooks
+STEP 2: OPEN MAIN UBUNTU TERMINAL AND ACTIVATE ENVIRONMENT
+Navigate to your project notebooks directory and activate your specific virtual environment using its path:
+cd /mnt/mydata/06.04.2026_home_laptop_backup/Downloads/Course3_AI_Bootcamp/Deep_Learning/ch13_Project_Car_Damage_Detection/car-damage-classifier/notebooks
 
 source /mnt/mydata/06.04.2026_home_laptop_backup/jlab-env/bin/activate
 
 
-STEP 3: CREATING THE PYTHON RUNNER SCRIPTCreate or update a script named run_all.py in your notebooks folder. Paste this exact clean Python code:pythonimport os
+STEP 3: CREATING THE PYTHON RUNNER SCRIPT
+Create or update a script named run_all.py in your notebooks folder. Paste this exact clean Python code:
+
+import os
 import sys
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
 from nbconvert.preprocessors.execute import CellExecutionError
 
-# 1. Update this list with your notebook names in order
+# Define your notebooks in the exact execution order
 notebooks = [
-    "damage_prediction_densenet.ipynb",
+    "damage_prediction_customCNN.ipynb",
+    "damage_prediction_mobilenet_small.ipynb",
+    "damage_prediction_mobilenet_large.ipynb",
     "damage_prediction_efficientnet.ipynb",
-    "damage_prediction_mobilenet.ipynb",
-    "damage_prediction_resnet.ipynb"
+    "damage_prediction_resnet.ipynb",
+    "damage_prediction_densenet.ipynb"
 ]
 
-# 2. Hardcoded path to your environment's isolated python binary
+# Explicitly path to the active bootcamp python binary
 ENV_PYTHON = "/mnt/mydata/06.04.2026_home_laptop_backup/jlab-env/bin/python3"
 
 def run_notebook(nb_path):
@@ -32,14 +40,15 @@ def run_notebook(nb_path):
     with open(nb_path, "r", encoding="utf-8") as f:
         nb = nbformat.read(f, as_version=4)
         
-    # Runs the notebook using the exact environment python parsing this script
+    # By setting a blank kernel name and explicitly overriding the path via system args,
+    # nbconvert is forced to use the exact python executing this runner script.
     ep = ExecutePreprocessor(timeout=None)
     
     try:
         ep.preprocess(nb, {'metadata': {'path': os.path.dirname(os.path.abspath(nb_path))}})
         print(f"Finished successfully: {nb_path}\n", flush=True)
     except CellExecutionError as e:
-        print(f"Error broken in {nb_path}:\n{e}\n", flush=True)
+        print(f"Execution failed in {nb_path}:\n{e}\n", flush=True)
     except Exception as e:
         print(f"Unexpected error in {nb_path}:\n{e}\n", flush=True)
     finally:
@@ -47,9 +56,10 @@ def run_notebook(nb_path):
             nbformat.write(nb, f)
 
 if __name__ == "__main__":
+    # Safety verification: ensure the script is executing under the right binary
     current_python = sys.executable
     if current_python != ENV_PYTHON:
-        print(f"Warning: Script running on {current_python} instead of {ENV_PYTHON}")
+        print(f"Warning: Script is running on {current_python} instead of {ENV_PYTHON}")
 
     for notebook in notebooks:
         if os.path.exists(notebook):
@@ -60,24 +70,36 @@ if __name__ == "__main__":
     print("All overnight training tasks finalized.", flush=True)
 
 
-STEP 4: LAUNCH OVERNIGHT BACKGROUND PROCESSExecute the script using the absolute environment path inside nohup. This isolates the execution context and prevents execution crashes if your SSH/terminal window loses connection:bashnohup /mnt/mydata/06.04.2026_home_laptop_backup/jlab-env/bin/python3 run_all.py > output.log 2>&1 &
+STEP 4: LAUNCH OVERNIGHT BACKGROUND PROCESS
+Execute the script using the absolute environment path inside nohup. This isolates the execution context and prevents execution crashes if your SSH/terminal window loses connection:
+
+nohup /mnt/mydata/06.04.2026_home_laptop_backup/jlab-env/bin/python3 run_all.py > output.log 2>&1 &
 
 
-STEP 5: MONITOR PROGRESS AND CHECKSUse these three standard commands to monitor your training loops:View live log terminal prints:bashtail -f output.log (crtl+C to exit)
-Verify the system background ID is active:bashps aux | grep run_all.py
-Read complete error logs and standard metrics outputs:bashcat output.log
+STEP 5: MONITOR PROGRESS AND CHECKS
+Use these three standard commands to monitor your training loops:
+1. View live log terminal prints:
+   tail -f output.log
+   (Ctrl+C to exit)
+2. Verify the system background ID is active:
+   ps aux | grep run_all.py
+3. Read complete error logs and standard metrics outputs:
+   cat output.log
 
 
-STEP 6: CRITICAL HARDWARE CHECKS BEFORE LEAVINGPlug your laptop power cord securely into the wall.In Ubuntu System Settings -> Power, switch Automatic Suspend / Sleep to OFF.
+STEP 6: CRITICAL HARDWARE CHECKS BEFORE LEAVING
+Plug your laptop power cord securely into the wall.
+In Ubuntu System Settings -> Power, switch Automatic Suspend / Sleep to OFF.
 
-STEP 7: To stop the entire execution process immediately mid-way, you must kill both the main tracking script (run_all.py) and the background Python worker process running your current notebook cell.
+
+STEP 7: TERMINATION STEPS (MID-WAY CANCELLATION)
+To stop the entire execution process immediately mid-way, you must kill both the main tracking script (run_all.py) and the background Python worker process running your current notebook cell.
 
 1. Find and terminate the main loop process running your background script:
-pkill -f run_all.py
+   pkill -f run_all.py
 
 2. Kill the Active Notebook Worker Kernel
-pkill -f nbconvert
+   pkill -f nbconvert
 
-3. Step 3: Verify Everything Has Stopped 
-ps aux | grep python3
-
+3. Verify Everything Has Stopped 
+   ps aux | grep python3
