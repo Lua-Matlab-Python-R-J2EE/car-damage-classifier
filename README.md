@@ -146,6 +146,6 @@ nohup python3 run_all.py > output.log 2>&1 &
 *   **Incomplete Set:** [GitHub - TQVCD Dataset](https://github.com/dxlabskku/TQVCD)
 
 ### Academic Foundations & Literature Baselines
-
+*   Lee, D., Lee, J., & Park, E. (2024). Automated vehicle damage classification using the three-quarter view car damage dataset and deep learning approaches. Heliyon, 10(14), e34016. https://doi.org/10.1016/j.heliyon.2024.e34016
 
 
