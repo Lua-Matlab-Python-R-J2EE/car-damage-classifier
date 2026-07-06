@@ -4,6 +4,11 @@ A comprehensive, production-grade deep learning pipeline designed to automatical
 
 ---
 
+## Live AI Production Deployments
+* **[Car Damage Classifier App](https://car-damage-classifier-v1.streamlit.app/)** - Production-grade deep learning pipeline classifying vehicle damage into 6 categories.
+
+---
+
 ## Repository Architecture
 
 The project is structured to keep data processing, backend microservices, and presentation layers modular, enabling clean cross-platform local execution:
