@@ -1,5 +1,7 @@
-# Data files
-/data/*
+# for GitHub Cloud
+
+# Data files - ignores local cache files but keeps configuration text files
+data/car_damage/train/*.arrow
 
 # Jupyter checkpoints
 .ipynb_checkpoints/
@@ -13,3 +15,13 @@ __pycache__/
 
 # basic checking
 /notebooks/set_up_checks.ipynb
+
+# OS specific files
+.DS_Store
+
+# Editor settings
+.idea/
+
+# Notebook logs
+notebooks/output.log
+

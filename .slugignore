@@ -1,0 +1,7 @@
+# for Streamlit Cloud
+
+data/
+notebooks/
+models/
+fastapi_server/
+

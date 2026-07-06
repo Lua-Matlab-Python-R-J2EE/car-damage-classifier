@@ -1,0 +1,83 @@
+AUTOMATED OVERNIGHT JUPYTER RUNNER: REFERENCE GUIDE
+
+
+STEP 1: KILL RUNNING JUPYTER INSTANCESEnsure no active browser tabs or Jupyter background processes are interacting with your files.In your active Jupyter terminal window, press: Ctrl + C then type y and press Enter.
+
+
+STEP 2: OPEN MAIN UBUNTU TERMINAL AND ACTIVATE ENVIRONMENTNavigate to your project notebooks directory and activate your specific virtual environment using its path:bashcd /mnt/mydata/06.04.2026_home_laptop_backup/Downloads/Course3_AI_Bootcamp/Deep_Learning/ch13_Project_Car_Damage_Detection/car-damage-classifier/notebooks
+
+source /mnt/mydata/06.04.2026_home_laptop_backup/jlab-env/bin/activate
+
+
+STEP 3: CREATING THE PYTHON RUNNER SCRIPTCreate or update a script named run_all.py in your notebooks folder. Paste this exact clean Python code:pythonimport os
+import sys
+import nbformat
+from nbconvert.preprocessors import ExecutePreprocessor
+from nbconvert.preprocessors.execute import CellExecutionError
+
+# 1. Update this list with your notebook names in order
+notebooks = [
+    "damage_prediction_densenet.ipynb",
+    "damage_prediction_efficientnet.ipynb",
+    "damage_prediction_mobilenet.ipynb",
+    "damage_prediction_resnet.ipynb"
+]
+
+# 2. Hardcoded path to your environment's isolated python binary
+ENV_PYTHON = "/mnt/mydata/06.04.2026_home_laptop_backup/jlab-env/bin/python3"
+
+def run_notebook(nb_path):
+    print(f"Starting notebook: {nb_path}", flush=True)
+    
+    with open(nb_path, "r", encoding="utf-8") as f:
+        nb = nbformat.read(f, as_version=4)
+        
+    # Runs the notebook using the exact environment python parsing this script
+    ep = ExecutePreprocessor(timeout=None)
+    
+    try:
+        ep.preprocess(nb, {'metadata': {'path': os.path.dirname(os.path.abspath(nb_path))}})
+        print(f"Finished successfully: {nb_path}\n", flush=True)
+    except CellExecutionError as e:
+        print(f"Error broken in {nb_path}:\n{e}\n", flush=True)
+    except Exception as e:
+        print(f"Unexpected error in {nb_path}:\n{e}\n", flush=True)
+    finally:
+        with open(nb_path, "w", encoding="utf-8") as f:
+            nbformat.write(nb, f)
+
+if __name__ == "__main__":
+    current_python = sys.executable
+    if current_python != ENV_PYTHON:
+        print(f"Warning: Script running on {current_python} instead of {ENV_PYTHON}")
+
+    for notebook in notebooks:
+        if os.path.exists(notebook):
+            run_notebook(notebook)
+        else:
+            print(f"File not found: {notebook}", flush=True)
+
+    print("All overnight training tasks finalized.", flush=True)
+
+
+STEP 4: LAUNCH OVERNIGHT BACKGROUND PROCESSExecute the script using the absolute environment path inside nohup. This isolates the execution context and prevents execution crashes if your SSH/terminal window loses connection:bashnohup /mnt/mydata/06.04.2026_home_laptop_backup/jlab-env/bin/python3 run_all.py > output.log 2>&1 &
+
+
+STEP 5: MONITOR PROGRESS AND CHECKSUse these three standard commands to monitor your training loops:View live log terminal prints:bashtail -f output.log (crtl+C to exit)
+Verify the system background ID is active:bashps aux | grep run_all.py
+Read complete error logs and standard metrics outputs:bashcat output.log
+
+
+STEP 6: CRITICAL HARDWARE CHECKS BEFORE LEAVINGPlug your laptop power cord securely into the wall.In Ubuntu System Settings -> Power, switch Automatic Suspend / Sleep to OFF.
+
+STEP 7: To stop the entire execution process immediately mid-way, you must kill both the main tracking script (run_all.py) and the background Python worker process running your current notebook cell.
+
+1. Find and terminate the main loop process running your background script:
+pkill -f run_all.py
+
+2. Kill the Active Notebook Worker Kernel
+pkill -f nbconvert
+
+3. Step 3: Verify Everything Has Stopped 
+ps aux | grep python3
+
