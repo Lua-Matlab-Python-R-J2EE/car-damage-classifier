@@ -1,14 +1,15 @@
 CAR DAMAGE DETECTION (CNN + TRANSFER LEARNING)
 
 AIMS:
--1. (v1) Streamlit app where user can drag and drop an image and the app gives out one of the 6 prediction classes for car damage detection 
+-1. (v1) Streamlit app where user can drag and drop an image and the app gives out 1 of the 6 prediction classes for car damage detection 
     - Build CNN from scratch
     - Use various Nets, like Res-NET, Elastic-NET, etc
+    - Unfreezze and re-train the heads of these architectures in Transfer Learning
     - Accuracy Aim: 75%    
     
 -2. (v2) 
     - Highlight the damaged regions on the car (based on YOLO)
-    - Unfreezze and re-train the last layer of other architectures in Transfer Learning
+    - Unfreezze and re-train the last layer (not the head) of other architectures in Transfer Learning
 
 CLASSES (6 classifications):
 -Front Normal, Front Crushed (minor), Front Breakage (major),
@@ -173,43 +174,43 @@ The table below details the evaluation strategy for both included and excluded a
 
 # ================ NEW ========================================
 
-# 🚗 Car Damage Detection Pipeline (CNN + Transfer Learning)
+# Car Damage Detection Pipeline (CNN + Transfer Learning)
 
-A comprehensive, production-grade deep learning pipeline designed to automatically classify structural vehicle damage into six distinct categories. This repository features a decoupled architecture separating the model core, an asynchronous FastAPI backend server, and an interactive Streamlit web application dashboard.
+A comprehensive, production-grade deep learning pipeline designed to automatically classify structural vehicle damage into 6 distinct categories. This repository features a decoupled architecture separating the model core, an asynchronous FastAPI backend server, and an interactive Streamlit web application dashboard.
 
 ---
 
-## 🏗️ Repository Architecture
+## Repository Architecture
 
 The project is structured to keep data processing, backend microservices, and presentation layers modular, enabling clean cross-platform local execution:
 
 ```text
 .
-├── config.py                # Global paths, device overrides, and hyperparameters
+├── config.py                       # Global paths, device overrides, and hyperparameters
 ├── core/
-│   └── model_utils.py       # Shared production model loading and prediction core
+│   └── model_utils.py              # Shared production model loading and prediction core
 ├── fastapi_server/
-│   ├── server.py            # Asynchronous REST API serving model predictions
-│   ├── requirements.txt     # Dedicated backend server API dependencies
-│   └── README.md            # Backend operational server guides
+│   ├── server.py                   # Asynchronous REST API serving model predictions
+│   ├── requirements.txt            # Dedicated backend server API dependencies
+│   └── README.md                   # Backend operational server guides
 ├── data/
-│   └── car_damage/          # Hugging Face Dataset cache binaries (.arrow structures)
-├── models/                  # Stored model architecture weights (.pth binaries)
-├── notebooks/               # Model development workspaces and automation runners
-│   ├── run_all.py           # Automated sequential notebook batch executor
+│   └── car_damage/                 # Hugging Face Dataset cache binaries (.arrow structures)
+├── models/                         # Stored model architecture weights (.pth binaries)
+├── notebooks/                      # Model development workspaces and automation runners
+│   ├── run_all.py                  # Automated sequential notebook batch executor
 │   ├── run_all_py_instructions.txt # Background process operational reference guide
-│   └── set_up_checks.ipynb  # Local path and package environment scratchpad
+│   └── set_up_checks.ipynb         # Local path and package environment scratchpad
 ├── src/
-│   └── helpers.py           # Custom CNN architecture classes & training loop routines
+│   └── helpers.py                  # Custom CNN architecture classes & training loop routines
 ├── streamlit_app/
-│   ├── app.py               # Interactive frontend web dashboard client
-│   └── requirements.txt     # Dedicated frontend cloud application dependencies
-└── requirements.txt         # Master repository workstation dependencies file
+│   ├── app.py                      # Interactive frontend web dashboard client
+│   └── requirements.txt            # Dedicated frontend cloud application dependencies
+└── requirements.txt                # Master repository workstation dependencies file
 ```
 
 ---
 
-## 🎯 Project Overview & Goals
+## Project Overview & Goals
 
 This computer vision project is engineered to evaluate custom convolutional networks against established pre-trained transfer learning architectures to maximize performance under strict workstation constraints.
 
@@ -226,7 +227,7 @@ This computer vision project is engineered to evaluate custom convolutional netw
 
 ---
 
-## 📊 Dataset & Visual Challenges
+## Dataset & Visual Challenges
 
 ### Data Breakdown
 The model utilizes a total of **2,300 RGB images** sourced from Hugging Face, partitioned cleanly using a **75% Train (1,725 images) / 12.5% Validation / 12.5% Test** split.
@@ -240,7 +241,7 @@ The model utilizes a total of **2,300 RGB images** sourced from Hugging Face, pa
 
 ---
 
-## 🤖 Model Selection & Transfer Learning Strategy
+## Model Selection & Transfer Learning Strategy
 
 ### Resource Constraints
 Training was conducted entirely on local **CPU infrastructure**. Consequently, the architecture selection leans heavily toward lightweight, computationally efficient networks.
@@ -256,7 +257,7 @@ Selected models are pretrained on **ImageNet** (1.2 million real-world images). 
 
 ---
 
-## 📊 Model Performance & Selection Matrix
+## Model Performance & Selection Matrix
 
 The table below details the structural evaluation strategy for both included and excluded architectures, alongside their final verified test accuracies where applicable.
 
@@ -277,33 +278,33 @@ The table below details the structural evaluation strategy for both included and
 | *EfficientNet-B7* | 66M | B0-B7 | - | 38,260 | Overkill for 1725 training images | **NO** | Overfitting risk | N/A |
 | *ResNet152* | 60M | 18,34,50,101,152 | - | 34,782 | Too large for 1725 training images | **NO** | Overfitting risk | N/A |
 
-### 📈 Key Findings & Insights
+### Key Findings & Insights
 *   **Target Achieved:** Only the **MobileNetV3** family successfully crossed our desired baseline target of **75% accuracy**, with **MobileNetV3-Small** emerging as the top-performing production model at **75.69%**.
 *   **Transfer Learning Success:** The custom baseline CNN scored just 52.43%, proving that pretrained weights provide a substantial performance boost (~23% absolute accuracy gain) on small data domains.
 
 ---
 
-## 🛠️ Workstation Setup & Local Execution
+## Workstation Setup & Local Execution
 
-### 📦 Environment Installation
+### Environment Installation
 Activate your local virtual environment and execute the master requirement installation from the root directory:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 🚗 Running the Streamlit Web UI Locally
+### Running the Streamlit Web UI Locally
 To launch the interactive front-end web app client:
 ```bash
 python3 -m streamlit run streamlit_app/app.py
 ```
 
-### ⚡ Running the FastAPI Backend Server Locally
+### Running the FastAPI Backend Server Locally
 To fire up the standalone asynchronous REST API server layer:
 ```bash
 uvicorn fastapi_server.server:app --reload
 ```
 
-### 🌙 Automated Overnight Batch Training
+### Automated Overnight Batch Training
 To launch the automated batch-processing subsystem to execute all individual model notebooks sequentially in the background without manual oversight:
 ```bash
 cd notebooks
@@ -313,7 +314,7 @@ nohup python3 run_all.py > output.log 2>&1 &
 
 ---
 
-## 🔗 Data Sources & Literature Context
+## Data Sources & Literature Context
 
 ### Sourced Datasets
 *   **Used in Project:** [Hugging Face - Comprehensive Car Damage](https://huggingface.co/datasets/SaiVaibhavS/comprehensive-car-damage)
