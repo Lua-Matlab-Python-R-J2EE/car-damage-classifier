@@ -71,6 +71,7 @@ def classify_car_damage(pil_image: Image.Image) -> str:
     # Ensure it is a standard RGB PIL Image first
     if torch.is_tensor(pil_image):
         # if tensor => PIL => to let transform handle it
+        import torchvision.transforms.functional as F
         pil_image = F.to_pil_image(pil_image)
     elif not isinstance(pil_image, Image.Image):
         # if file pointer (from Streamlit) => open it as PIL
