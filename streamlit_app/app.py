@@ -33,17 +33,18 @@ if uploaded_file is not None:
     # Open the image file using PIL
     image = Image.open(uploaded_file)
 
-    # NOT NEEDED to convert to RGB mode
-    # bec transformation function does it
+    # CRITICAL VALIDATION: Reject images that are not standard 3-channel RGB
+    if image.mode != "RGB":
+        st.error(f"INVAID image format (Detected: {image.mode}). Upload a 3-channel RGB image without transparency layers.")
+    else:
+        # Display the image using the modern layout standard
+        st.image(image, caption="User uploaded file", use_container_width=True)
 
-    # Display the image using the modern layout standard
-    st.image(image, caption="User uploaded file", use_container_width=True)
+        # Continue
+        st.success("...user image ready for processing...")
 
-    # Continue
-    st.success("...user image ready for processing...")
-
-    # Now pass prepared image to model with a loading indicator
-    with st.spinner("Processing..."):
-        prediction = classify_car_damage(image)
-        
-    st.success(f"Predicted Class is: {prediction}")
+        # Now pass prepared image to model with a loading indicator
+        with st.spinner("Processing..."):
+            prediction = classify_car_damage(image)
+            
+        st.success(f"Predicted Class is: {prediction}")
