@@ -67,6 +67,19 @@ def classify_car_damage(pil_image: Image.Image) -> str:
     Accepts a raw PIL image, applies the official helper transformation,
     and returns the model prediction.
     """
+    # Forced conversion
+    # Ensure it is a standard RGB PIL Image first
+    if torch.is_tensor(pil_image):
+        # if tensor => PIL => to let transform handle it
+        pil_image = F.to_pil_image(pil_image)
+    elif not isinstance(pil_image, Image.Image):
+        # if file pointer (from Streamlit) => open it as PIL
+        pil_image = Image.open(pil_image).convert("RGB")
+    else:
+        # If PIL => ensure it's RGB mode
+        pil_image = pil_image.convert("RGB")
+    
+    
     print(f"Size of input image: {pil_image.size}")
 
     # 1. Transform the single PIL image into a single 3D tensor
