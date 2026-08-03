@@ -13,6 +13,7 @@ from src.helpers import val_test_transform
 import config
 import torch
 import torchvision.models as models
+import torchvision.transforms.functional as F
 import torch.nn as nn
 
 print("--------------------------------------")
@@ -68,17 +69,17 @@ def classify_car_damage(pil_image: Image.Image) -> str:
     and returns the model prediction.
     """
     # Forced conversion
-    # Ensure it is a standard RGB PIL Image first
-    if torch.is_tensor(pil_image):
-        # if tensor => PIL => to let transform handle it
-        import torchvision.transforms.functional as F
-        pil_image = F.to_pil_image(pil_image)
-    elif not isinstance(pil_image, Image.Image):
-        # if file pointer (from Streamlit) => open it as PIL
-        pil_image = Image.open(pil_image).convert("RGB")
-    else:
-        # If PIL => ensure it's RGB mode
-        pil_image = pil_image.convert("RGB")
+    # Safe conversion regardless of what object Streamlit passes
+    try:
+        if torch.is_tensor(pil_image):
+            # If it is already a tensor, convert to PIL image first
+            pil_image = F.to_pil_image(pil_image).convert("RGB")
+        else:
+            # If it's a Streamlit UploadedFile or a file path, safely open it
+            pil_image = Image.open(pil_image).convert("RGB")
+    except Exception:
+        # Fallback in case it's a completely unexpected object type
+        pil_image = Image.fromarray(pil_image).convert("RGB")
     
     
     print(f"Size of input image: {pil_image.size}")
