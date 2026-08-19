@@ -143,6 +143,109 @@ nohup python3 run_all.py > output.log 2>&1 &
 
 ---
 
+## Docker Deployment
+
+The repository includes a CPU-based Docker configuration for reproducible, containerized execution of the Streamlit application.
+
+Docker is provided as an additional deployment and portability option. The production Streamlit application does not require Docker, but the Docker configuration allows external users and developers to run the application in an isolated, reproducible environment.
+
+### Docker Architecture
+
+The container uses:
+
+* Python 3.11-slim as the base image
+* CPU-only PyTorch and Torchvision
+* Streamlit as the application server
+* A dedicated .dockerignore to exclude local environments, notebooks, datasets, Git metadata, caches, and generated files
+
+### Build the Docker Image
+
+From the repository root:
+
+    docker build -t car-damage-dashboard .
+
+### Run the Container
+
+Start the container and map the container's Streamlit port 8501 to port 8501 on the host:
+
+    docker run --rm -p 8501:8501 car-damage-dashboard
+
+The application will then be available locally at:
+
+    http://localhost:8501
+
+Open this address in a web browser to access the containerized Streamlit dashboard.
+
+### Run in Detached Mode
+
+To run the container in the background:
+
+    docker run -d --name car-damage-dashboard -p 8501:8501 car-damage-dashboard
+
+Check the running container:
+
+    docker ps
+
+View the application logs:
+
+    docker logs car-damage-dashboard
+
+Stop the container:
+
+    docker stop car-damage-dashboard
+
+### Verify the Container Environment
+
+The Docker image was locally verified using the CPU versions of PyTorch and Torchvision:
+
+    docker run --rm car-damage-dashboard python -c "import torch, torchvision; print('torch:', torch.__version__); print('torchvision:', torchvision.__version__); print('CUDA available:', torch.cuda.is_available())"
+
+Expected output:
+
+    torch: 2.10.0+cpu
+    torchvision: 0.25.0+cpu
+    CUDA available: False
+
+This confirms that the container is using the intended CPU-only PyTorch environment and does not depend on CUDA or a GPU.
+
+### Containerized Application Verification
+
+The complete Streamlit application was also launched successfully inside the Docker container and tested through the browser.
+
+The container successfully:
+
+* Started the Streamlit server on port 8501
+* Loaded the project configuration
+* Loaded the trained MobileNetV3 model
+* Applied the image preprocessing pipeline
+* Accepted an uploaded vehicle image
+* Produced a classification prediction
+* Ran successfully using CPU-only PyTorch
+
+The local Docker test therefore verifies both the container environment and the actual application execution path, rather than only verifying that the Docker image builds successfully.
+
+### Docker vs. Production Streamlit Deployment
+
+Docker is not required for the live Streamlit deployment.
+
+The production application is currently deployed directly through Streamlit hosting:
+
+Live application: https://car-damage-classifier-v1.streamlit.app/
+
+The Docker configuration is maintained as an additional engineering and portfolio component demonstrating:
+
+* Containerization
+* Reproducible environments
+* Dependency isolation
+* CPU-based deep learning deployment
+* Docker image construction
+* Container lifecycle management
+* Local production-style application testing
+
+This allows the same application to be reproduced outside the Streamlit hosting environment without requiring the host machine to use the project's local Python environment.
+
+---
+
 ## Data Sources & Literature Context
 
 ### Sourced Datasets
